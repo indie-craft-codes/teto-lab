@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>테토-에겔 성격 유형 검사</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Malgun Gothic', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        #app {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .warning {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+            color: #856404;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #e0e0e0;
+            border-radius: 5px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s ease;
+        }
+
+        .question-container {
+            margin-bottom: 30px;
+        }
+
+        .question-number {
+            color: #667eea;
+            font-weight: bold;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+
+        .question-text {
+            font-size: 1.3em;
+            color: #333;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option {
+            padding: 15px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+            font-size: 1.1em;
+        }
+
+        .option:hover {
+            border-color: #667eea;
+            background: #f5f7ff;
+            transform: translateX(5px);
+        }
+
+        .option.selected {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+
+        button {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .btn-prev {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-prev:hover {
+            background: #5a6268;
+        }
+
+        .btn-next {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-next:hover {
+            transform: scale(1.05);
+        }
+
+        .btn-next:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-start {
+            display: block;
+            margin: 30px auto 0;
+            padding: 15px 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 1.2em;
+        }
+
+        .btn-start:hover {
+            transform: scale(1.05);
+        }
+
+        .result-container {
+            text-align: center;
+        }
+
+        .result-type {
+            font-size: 3em;
+            color: #667eea;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+
+        .result-description {
+            background: #f5f7ff;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+            text-align: left;
+            line-height: 1.8;
+        }
+
+        .result-description h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .result-description p {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .score-display {
+            display: flex;
+            justify-content: space-around;
+            margin: 30px 0;
+            gap: 20px;
+        }
+
+        .score-item {
+            flex: 1;
+            background: #f5f7ff;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .score-label {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .score-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .btn-restart {
+            display: block;
+            margin: 20px auto;
+            padding: 12px 40px;
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-restart:hover {
+            background: #5a6268;
+        }
+
+        .intro-text {
+            line-height: 1.8;
+            color: #555;
+            margin: 20px 0;
+        }
+
+        .type-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 30px 0;
+        }
+
+        .type-card {
+            background: #f5f7ff;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .type-card h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .type-card p {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .question-text {
+                font-size: 1.1em;
+            }
+
+            .type-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="container">
+            <!-- 시작 화면 -->
+            <div v-if="currentStep === 'intro'">
+                <h1>🧬 테토-에겔 성격 유형 검사</h1>
+                <p class="subtitle">당신의 성격 유형을 알아보세요</p>
+
+                <div class="warning">
+                    ⚠️ 이 검사는 과학적 근거가 없는 재미로 하는 테스트입니다
+                </div>
+
+                <div class="intro-text">
+                    <p>테토-에겔 성격 유형은 테스토스테론(테토)과 에스트로겐(에겐)을 기반으로 성격을 4가지로 분류합니다.</p>
+                </div>
+
+                <div class="type-grid">
+                    <div class="type-card">
+                        <h4>테토남 💪</h4>
+                        <p>강한 리더십과 직진적 성향</p>
+                    </div>
+                    <div class="type-card">
+                        <h4>에겐남 🌸</h4>
+                        <p>감수성 풍부하고 부드러운 성향</p>
+                    </div>
+                    <div class="type-card">
+                        <h4>테토녀 ⚡</h4>
+                        <p>활발하고 독립적인 성향</p>
+                    </div>
+                    <div class="type-card">
+                        <h4>에겐녀 🎀</h4>
+                        <p>감성적이고 섬세한 성향</p>
+                    </div>
+                </div>
+
+                <button class="btn-start" @click="startTest">검사 시작하기</button>
+            </div>
+
+            <!-- 질문 화면 -->
+            <div v-if="currentStep === 'test'">
+                <h1>테토-에겔 검사</h1>
+
+                <div class="progress-bar">
+                    <div class="progress-fill" :style="{width: progress + '%'}"></div>
+                </div>
+
+                <div class="question-container">
+                    <div class="question-number">질문 {{ currentQuestion + 1 }} / {{ questions.length }}</div>
+                    <div class="question-text">{{ questions[currentQuestion].text }}</div>
+
+                    <div class="options">
+                        <div
+                            v-for="(option, index) in questions[currentQuestion].options"
+                            :key="index"
+                            class="option"
+                            :class="{ selected: answers[currentQuestion] === index }"
+                            @click="selectAnswer(index)"
+                        >
+                            {{ option.text }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="navigation">
+                    <button class="btn-prev" @click="prevQuestion" v-if="currentQuestion > 0">
+                        이전
+                    </button>
+                    <div v-else></div>
+                    <button
+                        class="btn-next"
+                        @click="nextQuestion"
+                        :disabled="answers[currentQuestion] === null"
+                    >
+                        {{ currentQuestion === questions.length - 1 ? '결과 보기' : '다음' }}
+                    </button>
+                </div>
+            </div>
+
+            <!-- 결과 화면 -->
+            <div v-if="currentStep === 'result'" class="result-container">
+                <h1>검사 결과</h1>
+                <div class="result-type">{{ result.type }}</div>
+
+                <div class="score-display">
+                    <div class="score-item">
+                        <div class="score-label">테토 지수</div>
+                        <div class="score-value">{{ result.tetoScore }}%</div>
+                    </div>
+                    <div class="score-item">
+                        <div class="score-label">에겐 지수</div>
+                        <div class="score-value">{{ result.egenScore }}%</div>
+                    </div>
+                </div>
+
+                <div class="result-description">
+                    <h3>{{ result.title }}</h3>
+                    <p>{{ result.description }}</p>
+                    <br>
+                    <p><strong>특징:</strong></p>
+                    <ul>
+                        <li v-for="trait in result.traits" :key="trait">{{ trait }}</li>
+                    </ul>
+                </div>
+
+                <button class="btn-restart" @click="restart">다시 검사하기</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    currentStep: 'intro', // intro, test, result
+                    currentQuestion: 0,
+                    answers: [],
+                    questions: [],
+                    allQuestions: [
+                        {
+                            text: '친구들과 있을 때 나는...',
+                            options: [
+                                { text: '주도적으로 대화를 이끌어간다', score: 5 },
+                                { text: '적극적으로 참여한다', score: 3 },
+                                { text: '조용히 듣는 편이다', score: -3 },
+                                { text: '분위기를 맞춰간다', score: -5 }
+                            ]
+                        },
+                        {
+                            text: '문제가 생겼을 때 나는...',
+                            options: [
+                                { text: '즉시 해결책을 찾아 행동한다', score: 5 },
+                                { text: '논리적으로 분석한다', score: 3 },
+                                { text: '여러 사람의 의견을 듣는다', score: -3 },
+                                { text: '감정을 먼저 추스른다', score: -5 }
+                            ]
+                        },
+                        {
+                            text: '누군가와 의견이 충돌할 때...',
+                            options: [
+                                { text: '내 의견을 강하게 주장한다', score: 5 },
+                                { text: '논리적으로 설득한다', score: 3 },
+                                { text: '타협점을 찾으려 노력한다', score: -3 },
+                                { text: '상대의 감정을 먼저 배려한다', score: -5 }
+                            ]
+                        },
+                        {
+                            text: '새로운 환경에 가면...',
+                            options: [
+                                { text: '먼저 다가가서 사람들과 친해진다', score: 5 },
+                                { text: '관찰하다가 자연스럽게 섞인다', score: 3 },
+                                { text: '누군가 다가오기를 기다린다', score: -3 },
+                                { text: '편안한 사람 옆에 있는다', score: -5 }
+                            ]
+                        },
+                        {
+                            text: '스트레스를 받으면...',
+                            options: [
+                                { text: '운동이나 격한 활동으로 푼다', score: 5 },
+                                { text: '게임이나 취미생활을 한다', score: 3 },
+                                { text: '조용히 쉬면서 회복한다', score: -3 },
+                                { text: '친한 사람과 대화하며 위로받는다', score: -5 }
+                            ]
+                        },
+                        {
+                            text: '결정을 내릴 때...',
+                            options: [
+                                { text: '빠르고 확실하게 결정한다', score: 5 },
+                                { text: '효율성을 따져본다', score: 3 },
+                                { text: '주변 의견을 충분히 듣는다', score: -3 },
+                                { text: '직감과 감정을 따른다', score: -5 }
+                            ]
+                        },
+                        {
+                            text: '경쟁 상황에서 나는...',
+                            options: [
+                                { text: '이기려고 최선을 다한다', score: 5 },
+                                { text: '실력을 발휘하는 것에 집중한다', score: 3 },
+                                { text: '과정을 즐기는 편이다', score: -3 },
+                                { text: '경쟁 자체를 별로 좋아하지 않는다', score: -5 }
+                            ]
+                        },
+                        {
+                            text: '감정 표현은...',
+                            options: [
+                                { text: '필요할 때만 한다', score: 5 },
+                                { text: '상황에 맞게 조절한다', score: 3 },
+                                { text: '자연스럽게 드러난다', score: -3 },
+                                { text: '솔직하고 풍부하게 표현한다', score: -5 }
+                            ]
+                        },
+                        {
+                            text: '영화를 볼 때...',
+                            options: [
+                                { text: '액션이나 스릴러를 선호한다', score: 5 },
+                                { text: '재미있고 흥미로운 것을 본다', score: 3 },
+                                { text: '감동적인 스토리를 좋아한다', score: -3 },
+                                { text: '로맨스나 드라마에 빠져든다', score: -5 }
+                            ]
+                        },
+                        {
+                            text: '리더십에 대해...',
+                            options: [
+                                { text: '나서서 이끄는 것이 자연스럽다', score: 5 },
+                                { text: '필요하면 리더 역할을 한다', score: 3 },
+                                { text: '보조하는 역할이 편하다', score: -3 },
+                                { text: '팀원으로 있는 것을 선호한다', score: -5 }
+                            ]
+                        },
+                        {
+                            text: '위험한 상황에서...',
+                            options: [
+                                { text: '과감하게 도전한다', score: 5 },
+                                { text: '계산된 리스크는 감수한다', score: 3 },
+                                { text: '신중하게 생각한다', score: -3 },
+                                { text: '안전을 최우선으로 한다', score: -5 }
+                            ]
+                        },
+                        {
+                            text: '타인과의 관계에서...',
+                            options: [
+                                { text: '내 방식대로 이끌어간다', score: 5 },
+                                { text: '서로 독립적인 관계를 유지한다', score: 3 },
+                                { text: '감정적 교류를 중요하게 여긴다', score: -3 },
+                                { text: '깊은 유대감을 추구한다', score: -5 }
+                            ]
+                        },
+                        {
+                            text: '주말에 나는...',
+                            options: [
+                                { text: '새로운 활동이나 도전을 계획한다', score: 5 },
+                                { text: '친구들과 활발하게 어울린다', score: 3 },
+                                { text: '집에서 조용히 쉰다', score: -3 },
+                                { text: '영화나 책으로 감성을 채운다', score: -5 }
+                            ]
+                        },
+                        {
+                            text: '회의 시간에 나는...',
+                            options: [
+                                { text: '적극적으로 의견을 제시한다', score: 5 },
+                                { text: '필요할 때 발언한다', score: 3 },
+                                { text: '다른 사람의 의견을 경청한다', score: -3 },
+                                { text: '분위기를 살펴가며 참여한다', score: -5 }
+                            ]
+                        },
+                        {
+                            text: '목표를 설정할 때...',
+                            options: [
+                                { text: '도전적이고 높은 목표를 세운다', score: 5 },
+                                { text: '현실적이고 달성 가능한 목표를 세운다', score: 3 },
+                                { text: '여유 있게 접근한다', score: -3 },
+                                { text: '과정 자체를 즐기는 것을 중시한다', score: -5 }
+                            ]
+                        },
+                        {
+                            text: '갈등이 생기면...',
+                            options: [
+                                { text: '직접적으로 해결하려 한다', score: 5 },
+                                { text: '논리적으로 대화한다', score: 3 },
+                                { text: '시간을 두고 해결한다', score: -3 },
+                                { text: '상처받지 않게 조심스럽게 접근한다', score: -5 }
+                            ]
+                        },
+                        {
+                            text: '실패를 경험하면...',
+                            options: [
+                                { text: '빠르게 털어내고 다시 도전한다', score: 5 },
+                                { text: '원인을 분석하고 개선한다', score: 3 },
+                                { text: '시간을 두고 회복한다', score: -3 },
+                                { text: '마음이 많이 상한다', score: -5 }
+                            ]
+                        },
+                        {
+                            text: '팀 프로젝트에서...',
+                            options: [
+                                { text: '리더나 핵심 역할을 맡는다', score: 5 },
+                                { text: '자신의 역할을 충실히 한다', score: 3 },
+                                { text: '팀원들을 서포트한다', score: -3 },
+                                { text: '분위기 메이커 역할을 한다', score: -5 }
+                            ]
+                        },
+                        {
+                            text: '칭찬을 받으면...',
+                            options: [
+                                { text: '당연하다고 생각한다', score: 5 },
+                                { text: '고맙게 받아들인다', score: 3 },
+                                { text: '쑥스러워한다', score: -3 },
+                                { text: '감동받고 오래 기억한다', score: -5 }
+                            ]
+                        },
+                        {
+                            text: '여행을 갈 때...',
+                            options: [
+                                { text: '액티비티와 도전적인 활동을 선호한다', score: 5 },
+                                { text: '관광과 체험을 균형있게 한다', score: 3 },
+                                { text: '여유롭게 힐링한다', score: -3 },
+                                { text: '감성적인 장소를 찾아간다', score: -5 }
+                            ]
+                        },
+                        {
+                            text: '공개 발표를 할 때...',
+                            options: [
+                                { text: '자신감 있게 발표한다', score: 5 },
+                                { text: '준비를 철저히 해서 발표한다', score: 3 },
+                                { text: '긴장되지만 해낸다', score: -3 },
+                                { text: '매우 부담스럽고 스트레스받는다', score: -5 }
+                            ]
+                        },
+                        {
+                            text: '시간 관리는...',
+                            options: [
+                                { text: '효율적으로 빡빡하게 관리한다', score: 5 },
+                                { text: '계획을 세우고 지킨다', score: 3 },
+                                { text: '유연하게 대응한다', score: -3 },
+                                { text: '즉흥적이고 자유롭게 한다', score: -5 }
+                            ]
+                        },
+                        {
+                            text: '친구가 고민을 털어놓으면...',
+                            options: [
+                                { text: '해결책을 제시한다', score: 5 },
+                                { text: '조언을 해준다', score: 3 },
+                                { text: '공감하며 들어준다', score: -3 },
+                                { text: '감정을 함께 나눈다', score: -5 }
+                            ]
+                        },
+                        {
+                            text: '패션 스타일은...',
+                            options: [
+                                { text: '실용적이고 활동적인 스타일', score: 5 },
+                                { text: '깔끔하고 단정한 스타일', score: 3 },
+                                { text: '편안하고 자연스러운 스타일', score: -3 },
+                                { text: '감성적이고 세련된 스타일', score: -5 }
+                            ]
+                        },
+                        {
+                            text: '음악 취향은...',
+                            options: [
+                                { text: '강렬하고 에너지 넘치는 음악', score: 5 },
+                                { text: '다양한 장르를 즐긴다', score: 3 },
+                                { text: '차분하고 편안한 음악', score: -3 },
+                                { text: '감성적이고 서정적인 음악', score: -5 }
+                            ]
+                        },
+                        {
+                            text: '소셜 미디어 사용은...',
+                            options: [
+                                { text: '적극적으로 의견을 표현한다', score: 5 },
+                                { text: '가끔 필요할 때 올린다', score: 3 },
+                                { text: '주로 구경만 한다', score: -3 },
+                                { text: '감성적인 글이나 사진을 공유한다', score: -5 }
+                            ]
+                        },
+                        {
+                            text: '운동할 때...',
+                            options: [
+                                { text: '강도 높고 경쟁적인 운동을 선호한다', score: 5 },
+                                { text: '꾸준히 운동한다', score: 3 },
+                                { text: '가볍게 몸을 움직인다', score: -3 },
+                                { text: '요가나 필라테스 같은 운동을 선호한다', score: -5 }
+                            ]
+                        },
+                        {
+                            text: '변화에 대해...',
+                            options: [
+                                { text: '적극적으로 받아들이고 주도한다', score: 5 },
+                                { text: '필요하면 적응한다', score: 3 },
+                                { text: '천천히 받아들인다', score: -3 },
+                                { text: '익숙한 것을 선호한다', score: -5 }
+                            ]
+                        },
+                        {
+                            text: '식당에서 주문할 때...',
+                            options: [
+                                { text: '빠르게 결정하고 주문한다', score: 5 },
+                                { text: '메뉴를 보고 합리적으로 선택한다', score: 3 },
+                                { text: '다른 사람 의견을 참고한다', score: -3 },
+                                { text: '고민을 많이 한다', score: -5 }
+                            ]
+                        },
+                        {
+                            text: '돈을 쓸 때...',
+                            options: [
+                                { text: '투자나 경험에 과감하게 쓴다', score: 5 },
+                                { text: '계획적으로 쓴다', score: 3 },
+                                { text: '신중하게 생각하고 쓴다', score: -3 },
+                                { text: '감성적으로 끌리는 것에 쓴다', score: -5 }
+                            ]
+                        }
+                    ],
+                    result: null
+                };
+            },
+            computed: {
+                progress() {
+                    return ((this.currentQuestion + 1) / this.questions.length) * 100;
+                }
+            },
+            methods: {
+                shuffleArray(array) {
+                    const newArray = [...array];
+                    for (let i = newArray.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+                    }
+                    return newArray;
+                },
+                startTest() {
+                    // 전체 질문에서 10개를 랜덤하게 선택
+                    const shuffled = this.shuffleArray(this.allQuestions);
+                    this.questions = shuffled.slice(0, 10);
+                    this.currentStep = 'test';
+                    this.currentQuestion = 0;
+                    this.answers = new Array(this.questions.length).fill(null);
+                },
+                selectAnswer(index) {
+                    this.answers[this.currentQuestion] = index;
+                },
+                nextQuestion() {
+                    if (this.answers[this.currentQuestion] === null) return;
+
+                    if (this.currentQuestion < this.questions.length - 1) {
+                        this.currentQuestion++;
+                    } else {
+                        this.calculateResult();
+                    }
+                },
+                prevQuestion() {
+                    if (this.currentQuestion > 0) {
+                        this.currentQuestion--;
+                    }
+                },
+                calculateResult() {
+                    let totalScore = 0;
+
+                    this.answers.forEach((answerIndex, questionIndex) => {
+                        const score = this.questions[questionIndex].options[answerIndex].score;
+                        totalScore += score;
+                    });
+
+                    // 점수 범위: 질문 개수 * -5 ~ 질문 개수 * 5
+                    // 테토: 양수, 에겐: 음수
+                    const maxScore = this.questions.length * 5;
+                    const tetoScore = Math.max(0, Math.round(((totalScore + maxScore) / (maxScore * 2)) * 100));
+                    const egenScore = 100 - tetoScore;
+
+                    // 성별 입력 대신 점수로 판단
+                    let type, title, description, traits;
+                    const threshold = maxScore / 3; // 동적으로 기준점 계산
+
+                    if (totalScore > threshold) {
+                        type = '테토남 💪';
+                        title = '강한 리더십의 소유자';
+                        description = '당신은 직진적이고 주도적인 성향을 가지고 있습니다. 목표 지향적이며 경쟁 상황에서 강한 모습을 보입니다.';
+                        traits = [
+                            '리더십이 강하고 주도적입니다',
+                            '결단력이 있고 행동이 빠릅니다',
+                            '경쟁심이 강하고 승부욕이 있습니다',
+                            '감정보다 논리를 우선시합니다'
+                        ];
+                    } else if (totalScore > -threshold) {
+                        if (Math.random() > 0.5) {
+                            type = '테토녀 ⚡';
+                            title = '독립적이고 활발한 성격';
+                            description = '당신은 활발하고 독립적인 성향을 가지고 있습니다. 자신감이 있고 적극적으로 행동합니다.';
+                            traits = [
+                                '독립적이고 자립심이 강합니다',
+                                '활발하고 에너지가 넘칩니다',
+                                '자신의 의견을 분명히 표현합니다',
+                                '목표 달성을 위해 노력합니다'
+                            ];
+                        } else {
+                            type = '에겐남 🌸';
+                            title = '감수성 풍부한 성격';
+                            description = '당신은 섬세하고 감수성이 풍부한 성향을 가지고 있습니다. 타인의 감정을 잘 이해하고 배려합니다.';
+                            traits = [
+                                '감수성이 풍부하고 섬세합니다',
+                                '타인의 감정을 잘 이해합니다',
+                                '예술적 감각이 뛰어납니다',
+                                '평화로운 분위기를 선호합니다'
+                            ];
+                        }
+                    } else {
+                        type = '에겐녀 🎀';
+                        title = '감성적이고 섬세한 성격';
+                        description = '당신은 감성적이고 섬세한 성향을 가지고 있습니다. 타인에 대한 공감 능력이 뛰어나고 감정 표현이 풍부합니다.';
+                        traits = [
+                            '감성적이고 로맨틱합니다',
+                            '타인에 대한 공감 능력이 뛰어납니다',
+                            '섬세하고 배려심이 깊습니다',
+                            '감정 표현이 풍부합니다'
+                        ];
+                    }
+
+                    this.result = {
+                        type,
+                        tetoScore,
+                        egenScore,
+                        title,
+                        description,
+                        traits
+                    };
+
+                    this.currentStep = 'result';
+                },
+                restart() {
+                    this.currentStep = 'intro';
+                    this.currentQuestion = 0;
+                    this.answers = [];
+                    this.questions = [];
+                    this.result = null;
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
