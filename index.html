@@ -2,8 +2,11 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>테토-에겔 성격 유형 검사</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>테토-에겐 성격 유형 검사</title>
     <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.js"></script>
     <style>
         * {
@@ -12,10 +15,18 @@
             box-sizing: border-box;
         }
 
+        html {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            min-height: -webkit-fill-available;
+        }
+
         body {
             font-family: 'Malgun Gothic', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-attachment: fixed;
             min-height: 100vh;
+            min-height: -webkit-fill-available;
             padding: 20px;
         }
 
@@ -267,7 +278,60 @@
             color: #666;
         }
 
+        .gender-selection {
+            margin: 30px 0;
+        }
+
+        .gender-selection h3 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+        }
+
+        .gender-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .gender-btn {
+            flex: 1;
+            max-width: 200px;
+            padding: 20px;
+            border: 3px solid #e0e0e0;
+            border-radius: 15px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-size: 1.2em;
+        }
+
+        .gender-btn:hover {
+            border-color: #667eea;
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .gender-btn.selected {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .gender-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+
         @media (max-width: 600px) {
+            body {
+                padding: env(safe-area-inset-top, 20px) env(safe-area-inset-right, 20px) env(safe-area-inset-bottom, 20px) env(safe-area-inset-left, 20px);
+                padding-top: max(20px, env(safe-area-inset-top));
+                padding-bottom: max(20px, env(safe-area-inset-bottom));
+            }
+
             .container {
                 padding: 20px;
             }
@@ -283,6 +347,24 @@
             .type-grid {
                 grid-template-columns: 1fr;
             }
+
+            .gender-buttons {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .gender-btn {
+                max-width: 100%;
+            }
+
+            .result-type {
+                font-size: 2em;
+            }
+
+            .score-display {
+                flex-direction: column;
+                gap: 15px;
+            }
         }
     </style>
 </head>
@@ -291,7 +373,7 @@
         <div class="container">
             <!-- 시작 화면 -->
             <div v-if="currentStep === 'intro'">
-                <h1>🧬 테토-에겔 성격 유형 검사</h1>
+                <h1>🧬 테토-에겐 성격 유형 검사</h1>
                 <p class="subtitle">당신의 성격 유형을 알아보세요</p>
 
                 <div class="warning">
@@ -299,7 +381,7 @@
                 </div>
 
                 <div class="intro-text">
-                    <p>테토-에겔 성격 유형은 테스토스테론(테토)과 에스트로겐(에겐)을 기반으로 성격을 4가지로 분류합니다.</p>
+                    <p>테토-에겐 성격 유형은 테스토스테론(테토)과 에스트로겐(에겐)을 기반으로 성격을 4가지로 분류합니다.</p>
                 </div>
 
                 <div class="type-grid">
@@ -321,12 +403,26 @@
                     </div>
                 </div>
 
-                <button class="btn-start" @click="startTest">검사 시작하기</button>
+                <div class="gender-selection">
+                    <h3>성별을 선택해주세요</h3>
+                    <div class="gender-buttons">
+                        <div class="gender-btn" :class="{ selected: gender === 'male' }" @click="selectGender('male')">
+                            <div class="gender-icon">👨</div>
+                            <div>남성</div>
+                        </div>
+                        <div class="gender-btn" :class="{ selected: gender === 'female' }" @click="selectGender('female')">
+                            <div class="gender-icon">👩</div>
+                            <div>여성</div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn-start" @click="startTest" :disabled="!gender">검사 시작하기</button>
             </div>
 
             <!-- 질문 화면 -->
             <div v-if="currentStep === 'test'">
-                <h1>테토-에겔 검사</h1>
+                <h1>테토-에겐 검사</h1>
 
                 <div class="progress-bar">
                     <div class="progress-fill" :style="{width: progress + '%'}"></div>
@@ -405,6 +501,7 @@
                     currentQuestion: 0,
                     answers: [],
                     questions: [],
+                    gender: null, // 'male' or 'female'
                     allQuestions: [
                         {
                             text: '친구들과 있을 때 나는...',
@@ -686,6 +783,9 @@
                 }
             },
             methods: {
+                selectGender(gender) {
+                    this.gender = gender;
+                },
                 shuffleArray(array) {
                     const newArray = [...array];
                     for (let i = newArray.length - 1; i > 0; i--) {
@@ -733,22 +833,24 @@
                     const tetoScore = Math.max(0, Math.round(((totalScore + maxScore) / (maxScore * 2)) * 100));
                     const egenScore = 100 - tetoScore;
 
-                    // 성별 입력 대신 점수로 판단
+                    // 성별과 점수로 유형 판단
                     let type, title, description, traits;
                     const threshold = maxScore / 3; // 동적으로 기준점 계산
+                    const isMale = this.gender === 'male';
 
                     if (totalScore > threshold) {
-                        type = '테토남 💪';
-                        title = '강한 리더십의 소유자';
-                        description = '당신은 직진적이고 주도적인 성향을 가지고 있습니다. 목표 지향적이며 경쟁 상황에서 강한 모습을 보입니다.';
-                        traits = [
-                            '리더십이 강하고 주도적입니다',
-                            '결단력이 있고 행동이 빠릅니다',
-                            '경쟁심이 강하고 승부욕이 있습니다',
-                            '감정보다 논리를 우선시합니다'
-                        ];
-                    } else if (totalScore > -threshold) {
-                        if (Math.random() > 0.5) {
+                        // 테토 성향 (강함)
+                        if (isMale) {
+                            type = '테토남 💪';
+                            title = '강한 리더십의 소유자';
+                            description = '당신은 직진적이고 주도적인 성향을 가지고 있습니다. 목표 지향적이며 경쟁 상황에서 강한 모습을 보입니다.';
+                            traits = [
+                                '리더십이 강하고 주도적입니다',
+                                '결단력이 있고 행동이 빠릅니다',
+                                '경쟁심이 강하고 승부욕이 있습니다',
+                                '감정보다 논리를 우선시합니다'
+                            ];
+                        } else {
                             type = '테토녀 ⚡';
                             title = '독립적이고 활발한 성격';
                             description = '당신은 활발하고 독립적인 성향을 가지고 있습니다. 자신감이 있고 적극적으로 행동합니다.';
@@ -758,7 +860,33 @@
                                 '자신의 의견을 분명히 표현합니다',
                                 '목표 달성을 위해 노력합니다'
                             ];
+                        }
+                    } else if (totalScore > -threshold) {
+                        // 중간 성향
+                        if (isMale) {
+                            type = '테토남 💪';
+                            title = '균형잡힌 리더십';
+                            description = '당신은 리더십과 배려심을 모두 갖춘 균형잡힌 성향입니다. 상황에 맞게 유연하게 대응합니다.';
+                            traits = [
+                                '상황에 맞게 리더십을 발휘합니다',
+                                '논리와 감정의 균형을 잡습니다',
+                                '타인을 배려하면서도 주도적입니다',
+                                '협력과 경쟁을 모두 잘합니다'
+                            ];
                         } else {
+                            type = '테토녀 ⚡';
+                            title = '활발하면서도 섬세한 성격';
+                            description = '당신은 활발함과 섬세함을 동시에 가진 매력적인 성향입니다. 상황에 맞게 유연하게 대응합니다.';
+                            traits = [
+                                '활발하면서도 타인을 배려합니다',
+                                '독립적이면서도 협력적입니다',
+                                '감성과 이성의 균형을 잡습니다',
+                                '다양한 상황에 잘 적응합니다'
+                            ];
+                        }
+                    } else {
+                        // 에겐 성향 (부드러움)
+                        if (isMale) {
                             type = '에겐남 🌸';
                             title = '감수성 풍부한 성격';
                             description = '당신은 섬세하고 감수성이 풍부한 성향을 가지고 있습니다. 타인의 감정을 잘 이해하고 배려합니다.';
@@ -768,17 +896,17 @@
                                 '예술적 감각이 뛰어납니다',
                                 '평화로운 분위기를 선호합니다'
                             ];
+                        } else {
+                            type = '에겐녀 🎀';
+                            title = '감성적이고 섬세한 성격';
+                            description = '당신은 감성적이고 섬세한 성향을 가지고 있습니다. 타인에 대한 공감 능력이 뛰어나고 감정 표현이 풍부합니다.';
+                            traits = [
+                                '감성적이고 로맨틱합니다',
+                                '타인에 대한 공감 능력이 뛰어납니다',
+                                '섬세하고 배려심이 깊습니다',
+                                '감정 표현이 풍부합니다'
+                            ];
                         }
-                    } else {
-                        type = '에겐녀 🎀';
-                        title = '감성적이고 섬세한 성격';
-                        description = '당신은 감성적이고 섬세한 성향을 가지고 있습니다. 타인에 대한 공감 능력이 뛰어나고 감정 표현이 풍부합니다.';
-                        traits = [
-                            '감성적이고 로맨틱합니다',
-                            '타인에 대한 공감 능력이 뛰어납니다',
-                            '섬세하고 배려심이 깊습니다',
-                            '감정 표현이 풍부합니다'
-                        ];
                     }
 
                     this.result = {
@@ -797,6 +925,7 @@
                     this.currentQuestion = 0;
                     this.answers = [];
                     this.questions = [];
+                    this.gender = null;
                     this.result = null;
                 }
             }
