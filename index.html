@@ -279,7 +279,7 @@
         }
 
         .gender-selection {
-            margin: 30px 0;
+            margin: 50px 0;
         }
 
         .gender-selection h3 {
@@ -293,6 +293,7 @@
             display: flex;
             gap: 20px;
             justify-content: center;
+            margin-bottom: 30px;
         }
 
         .gender-btn {
@@ -403,8 +404,15 @@
                     </div>
                 </div>
 
+                <button class="btn-start" @click="goToGenderSelection">검사 시작하기</button>
+            </div>
+
+            <!-- 성별 선택 화면 -->
+            <div v-if="currentStep === 'gender'">
+                <h1>성별 선택</h1>
+                <p class="subtitle">당신의 성별을 선택해주세요</p>
+
                 <div class="gender-selection">
-                    <h3>성별을 선택해주세요</h3>
                     <div class="gender-buttons">
                         <div class="gender-btn" :class="{ selected: gender === 'male' }" @click="selectGender('male')">
                             <div class="gender-icon">👨</div>
@@ -417,7 +425,10 @@
                     </div>
                 </div>
 
-                <button class="btn-start" @click="startTest" :disabled="!gender">검사 시작하기</button>
+                <div class="navigation">
+                    <button class="btn-prev" @click="backToIntro">이전</button>
+                    <button class="btn-next" @click="startTest" :disabled="!gender">다음</button>
+                </div>
             </div>
 
             <!-- 질문 화면 -->
@@ -486,7 +497,8 @@
                     </ul>
                 </div>
 
-                <button class="btn-restart" @click="restart">다시 검사하기</button>
+                <button class="btn-restart" @click="goToHome">홈으로 이동</button>
+                <button class="btn-restart" @click="restart" style="margin-top: 10px;">다시 검사하기</button>
             </div>
         </div>
     </div>
@@ -497,7 +509,7 @@
         createApp({
             data() {
                 return {
-                    currentStep: 'intro', // intro, test, result
+                    currentStep: 'intro', // intro, gender, test, result
                     currentQuestion: 0,
                     answers: [],
                     questions: [],
@@ -783,6 +795,13 @@
                 }
             },
             methods: {
+                goToGenderSelection() {
+                    this.currentStep = 'gender';
+                },
+                backToIntro() {
+                    this.currentStep = 'intro';
+                    this.gender = null;
+                },
                 selectGender(gender) {
                     this.gender = gender;
                 },
@@ -795,6 +814,7 @@
                     return newArray;
                 },
                 startTest() {
+                    if (!this.gender) return;
                     // 전체 질문에서 10개를 랜덤하게 선택
                     const shuffled = this.shuffleArray(this.allQuestions);
                     this.questions = shuffled.slice(0, 10);
@@ -921,6 +941,13 @@
                     this.currentStep = 'result';
                 },
                 restart() {
+                    this.currentStep = 'gender';
+                    this.currentQuestion = 0;
+                    this.answers = [];
+                    this.questions = [];
+                    this.result = null;
+                },
+                goToHome() {
                     this.currentStep = 'intro';
                     this.currentQuestion = 0;
                     this.answers = [];
